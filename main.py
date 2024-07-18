@@ -29,6 +29,8 @@ def get_args_parser():
                         help='gradient clipping max norm')
 
     # Model parameters
+    parser.add_argument('--model', default='detr', type=str, choices=['detr', 'perceiver'],
+                        help="Name of the transformer model to use")
     parser.add_argument('--frozen_weights', type=str, default=None,
                         help="Path to the pretrained model. If set, only the mask head will be trained")
     # * Backbone
