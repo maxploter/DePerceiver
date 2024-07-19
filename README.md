@@ -169,7 +169,8 @@ conda install -c pytorch pytorch torchvision
 Install pycocotools (for evaluation on COCO) and scipy (for training):
 ```
 conda install cython scipy
-pip install -U 'git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI'
+conda install conda-forge::einops
+conda install conda-forge::pycocotools
 ```
 That's it, should be good to train and evaluate detection models.
 
