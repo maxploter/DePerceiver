@@ -407,7 +407,7 @@ def build(args):
         weight_tie_layers=False,  # whether to weight tie layers (optional, as indicated in the diagram)
         fourier_encode_data=True,
         # whether to auto-fourier encode the data, using the input_axis given. defaults to True, but can be turned off if you are fourier encoding the data yourself
-        self_per_cross_attn=1,  # number of self attention blocks per cross attention
+        self_per_cross_attn=args.self_per_cross_attn,  # number of self attention blocks per cross attention
         final_classifier_head=False  # mean pool and project embeddings to number of classes (num_classes) at the end
     )
 
