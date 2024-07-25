@@ -57,6 +57,8 @@ def get_args_parser():
     parser.add_argument('--num_queries', default=100, type=int,
                         help="Number of query slots")
     parser.add_argument('--pre_norm', action='store_true')
+    parser.add_argument('--self_per_cross_attn', default=1, type=int,
+                        help="(Perceiver) Number of self attention blocks per cross attention")
 
     # * Segmentation
     parser.add_argument('--masks', action='store_true',
