@@ -59,6 +59,8 @@ def get_args_parser():
     parser.add_argument('--pre_norm', action='store_true')
     parser.add_argument('--self_per_cross_attn', default=1, type=int,
                         help="(Perceiver) Number of self attention blocks per cross attention")
+    parser.add_argument('--enc_nheads_cross', default=1, type=int,
+                        help="(Perceiver) Number of attention heads inside the perceiver encoder cross attentions")
 
     # * Segmentation
     parser.add_argument('--masks', action='store_true',
