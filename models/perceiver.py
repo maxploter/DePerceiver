@@ -387,19 +387,22 @@ def build(args):
 
     backbone = build_backbone(args)[0] # TODO: hack to get backbone
 
+    num_freq_bands = 6
+    fourier_channels = 2 * ((num_freq_bands * 2) + 1)
+
     perceiver = Perceiver(
         input_channels=backbone.num_channels,  # number of channels for each token of the input
         input_axis=2,  # number of axis for input data (2 for images, 3 for video)
-        num_freq_bands=6,  # number of freq bands, with original value (2 * K + 1)
+        num_freq_bands=num_freq_bands,  # number of freq bands, with original value (2 * K + 1)
         max_freq=10.,  # maximum frequency, hyperparameter depending on how fine the data is
         depth=1,  # depth of net. The shape of the final attention mechanism will be:
         #   depth * (cross attention -> self_per_cross_attn * self attention)
         num_latents=args.num_queries,
         # number of latents, or induced set points, or centroids. different papers giving it different names
         latent_dim=args.hidden_dim,  # latent dimension
-        cross_heads=1,  # number of heads for cross attention. paper said 1
+        cross_heads=args.enc_nheads_cross,  # number of heads for cross attention. paper said 1
         latent_heads=args.nheads,  # number of heads for latent self attention, 8
-        cross_dim_head=backbone.num_channels,  # number of dimensions per cross attention head
+        cross_dim_head=(backbone.num_channels + fourier_channels) // args.enc_nheads_cross,  # number of dimensions per cross attention head
         latent_dim_head=args.hidden_dim // args.nheads,  # number of dimensions per latent self attention head
         num_classes=-1,  # NOT USED. output number of classes.
         attn_dropout=args.dropout,
