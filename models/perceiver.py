@@ -398,9 +398,9 @@ def build(args):
         # number of latents, or induced set points, or centroids. different papers giving it different names
         latent_dim=args.hidden_dim,  # latent dimension
         cross_heads=1,  # number of heads for cross attention. paper said 1
-        latent_heads=1,  # number of heads for latent self attention, 8
+        latent_heads=args.nheads,  # number of heads for latent self attention, 8
         cross_dim_head=backbone.num_channels,  # number of dimensions per cross attention head
-        latent_dim_head=args.hidden_dim,  # number of dimensions per latent self attention head
+        latent_dim_head=args.hidden_dim // args.nheads,  # number of dimensions per latent self attention head
         num_classes=-1,  # NOT USED. output number of classes.
         attn_dropout=args.dropout,
         ff_dropout=args.dropout,
