@@ -109,10 +109,20 @@ class Joiner(nn.Sequential):
         return out, pos
 
 
+class NoBackbone(nn.Module):
+    def __init__(self):
+        super(NoBackbone, self).__init__()
+        self.backbone = nn.Identity()
+
+    def forward(self, tensor_list: NestedTensor):
+        output = self.backbone(tensor_list)
+        return {'0': output}
+
+
 def build_backbone(args):
     if args.backbone == 'n/a':
         # wrap in list to make compatible with Joiner (nn.Sequential) where first element is backbone
-        backbone = nn.Identity()
+        backbone = NoBackbone()
         backbone.num_channels = 3 # RGB
         model = Joiner(backbone, backbone)
         model.num_channels = backbone.num_channels
