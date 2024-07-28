@@ -110,6 +110,13 @@ class Joiner(nn.Sequential):
 
 
 def build_backbone(args):
+    if args.backbone == 'n/a':
+        # wrap in list to make compatible with Joiner (nn.Sequential) where first element is backbone
+        backbone = nn.Identity()
+        backbone.num_channels = 3 # RGB
+        model = Joiner(backbone, backbone)
+        model.num_channels = backbone.num_channels
+        return model
     position_embedding = build_position_encoding(args)
     train_backbone = args.lr_backbone > 0
     return_interm_layers = args.masks
