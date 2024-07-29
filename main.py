@@ -61,6 +61,10 @@ def get_args_parser():
                         help="(Perceiver) Number of self attention blocks per cross attention")
     parser.add_argument('--enc_nheads_cross', default=1, type=int,
                         help="(Perceiver) Number of attention heads inside the perceiver encoder cross attentions")
+    parser.add_argument('--num_freq_bands', default=6, type=int,
+                        help="(Perceiver) Number of freq bands")
+    parser.add_argument('--max_freq', default=10, type=int,
+                        help="(Perceiver) Maximum frequency, hyperparameter depending on how fine the data is")
 
     # * Segmentation
     parser.add_argument('--masks', action='store_true',

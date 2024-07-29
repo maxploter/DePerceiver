@@ -387,14 +387,14 @@ def build(args):
 
     backbone = build_backbone(args)[0] # TODO: hack to get backbone
 
-    num_freq_bands = 6
+    num_freq_bands = args.num_freq_bands
     fourier_channels = 2 * ((num_freq_bands * 2) + 1)
 
     perceiver = Perceiver(
         input_channels=backbone.num_channels,  # number of channels for each token of the input
         input_axis=2,  # number of axis for input data (2 for images, 3 for video)
         num_freq_bands=num_freq_bands,  # number of freq bands, with original value (2 * K + 1)
-        max_freq=10.,  # maximum frequency, hyperparameter depending on how fine the data is
+        max_freq=args.max_freq,  # maximum frequency, hyperparameter depending on how fine the data is
         depth=args.enc_layers,  # depth of net. The shape of the final attention mechanism will be:
         #   depth * (cross attention -> self_per_cross_attn * self attention)
         num_latents=args.num_queries,
