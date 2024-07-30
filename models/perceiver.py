@@ -140,7 +140,7 @@ class Attention(nn.Module):
             mask = rearrange(mask, 'b ... -> b (...)')
             max_neg_value = -torch.finfo(sim.dtype).max
             mask = repeat(mask, 'b j -> (b h) () j', h = h)
-            sim.masked_fill_(~mask, max_neg_value)
+            sim.masked_fill_(mask, max_neg_value)  # Fills elements of self tensor with value where mask is True
 
         # attention, what we cannot get enough of
         attn = sim.softmax(dim = -1)
@@ -363,7 +363,9 @@ class DePerceiver(nn.Module):
         src = src.permute(0, 2, 3, 1)
         assert mask is not None
         hs = self.perceiver(
-            src, return_embeddings=True
+            data=src,
+            mask=mask,
+            return_embeddings=True
         )
         out = self.classification_head(hs)
         return out
