@@ -57,10 +57,13 @@ class FrozenBatchNorm2d(torch.nn.Module):
 
 class BackboneBase(nn.Module):
 
-    def __init__(self, backbone: nn.Module, train_backbone: bool, num_channels: int, return_interm_layers: bool):
+    def __init__(self, backbone: nn.Module, train_backbone: bool, num_channels: int, return_interm_layers: bool,
+                 layers_used: set = None):
         super().__init__()
+        if layers_used is None:
+            layers_used = {'layer1', 'layer2', 'layer3', 'layer4'}
         for name, parameter in backbone.named_parameters():
-            if not train_backbone or 'layer2' not in name and 'layer3' not in name and 'layer4' not in name:
+            if not train_backbone or name not in layers_used:
                 parameter.requires_grad_(False)
         if return_interm_layers:
             return_layers = {"layer1": "0", "layer2": "1", "layer3": "2", "layer4": "3"}
@@ -85,12 +88,13 @@ class Backbone(BackboneBase):
     def __init__(self, name: str,
                  train_backbone: bool,
                  return_interm_layers: bool,
-                 dilation: bool):
+                 dilation: bool,
+                 layers_used: set[str] = None):
         backbone = getattr(torchvision.models, name)(
             replace_stride_with_dilation=[False, False, dilation],
             pretrained=is_main_process(), norm_layer=FrozenBatchNorm2d)
         num_channels = 512 if name in ('resnet18', 'resnet34') else 2048
-        super().__init__(backbone, train_backbone, num_channels, return_interm_layers)
+        super().__init__(backbone, train_backbone, num_channels, return_interm_layers, layers_used)
 
 
 class IntermediateLayerGetterBackbone(nn.Module):
@@ -149,7 +153,9 @@ def build_backbone(args):
         elif args.backbone == 'resnet50':
             train_backbone = args.lr_backbone > 0
             return_interm_layers = bool(args.interm_layer)
-            backbone = Backbone(args.backbone, train_backbone, return_interm_layers, args.dilation)
+            layers_used = {f'layer{i}' for i in range(1, int(args.interm_layer) + 2)} if return_interm_layers else None
+            backbone = Backbone(args.backbone, train_backbone, return_interm_layers, args.dilation,
+                                layers_used=layers_used)
             # For perceiver models we return backbone's feature output from particular layer
             return IntermediateLayerGetterBackbone(layer=args.interm_layer, backbone=backbone)
 
