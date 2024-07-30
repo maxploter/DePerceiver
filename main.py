@@ -40,6 +40,8 @@ def get_args_parser():
                         help="If true, we replace stride with dilation in the last convolutional block (DC5)")
     parser.add_argument('--position_embedding', default='sine', type=str, choices=('sine', 'learned'),
                         help="Type of positional embedding to use on top of the image features")
+    parser.add_argument('--interm_layer', default=None, type=str, choices=['0', '1', '2'],
+                        help="Use feature output from resnet backbone at intermediate layer (layer0, layer1, layer2)")
 
     # * Transformer
     parser.add_argument('--enc_layers', default=6, type=int,

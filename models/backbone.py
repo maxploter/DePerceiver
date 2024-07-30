@@ -93,6 +93,18 @@ class Backbone(BackboneBase):
         super().__init__(backbone, train_backbone, num_channels, return_interm_layers)
 
 
+class IntermediateLayerGetterBackbone(nn.Module):
+
+    def __init__(self, layer: str, backbone: Backbone):
+        super().__init__()
+        self.layer = layer if layer is not None else '0'
+        self.num_channels = [256, 512, 1024, 2048][int(layer)] if layer is not None else backbone.num_channels
+        self.backbone = backbone
+
+    def forward(self, tensor_list: NestedTensor):
+        xs = self.backbone.forward(tensor_list)
+        return xs[self.layer]
+
 class Joiner(nn.Sequential):
     def __init__(self, backbone, position_embedding):
         super().__init__(backbone, position_embedding)
@@ -120,17 +132,25 @@ class NoBackbone(nn.Module):
 
 
 def build_backbone(args):
-    if args.backbone == 'n/a':
-        # wrap in list to make compatible with Joiner (nn.Sequential) where first element is backbone
-        backbone = NoBackbone()
-        backbone.num_channels = 3 # RGB
-        model = Joiner(backbone, backbone)
+    if args.model == 'detr':
+        train_backbone = args.lr_backbone > 0
+        return_interm_layers = args.masks
+        backbone = Backbone(args.backbone, train_backbone, return_interm_layers, args.dilation)
+        position_embedding = build_position_encoding(args)
+        model = Joiner(backbone, position_embedding)
         model.num_channels = backbone.num_channels
         return model
-    position_embedding = build_position_encoding(args)
-    train_backbone = args.lr_backbone > 0
-    return_interm_layers = args.masks
-    backbone = Backbone(args.backbone, train_backbone, return_interm_layers, args.dilation)
-    model = Joiner(backbone, position_embedding)
-    model.num_channels = backbone.num_channels
-    return model
+    else:
+        if args.backbone == 'n/a':
+            # wrap in list to make compatible with Joiner (nn.Sequential) where first element is backbone
+            backbone = NoBackbone()
+            backbone.num_channels = 3  # RGB
+            return backbone
+        elif args.backbone == 'resnet50':
+            train_backbone = args.lr_backbone > 0
+            return_interm_layers = bool(args.interm_layer)
+            backbone = Backbone(args.backbone, train_backbone, return_interm_layers, args.dilation)
+            # For perceiver models we return backbone's feature output from particular layer
+            return IntermediateLayerGetterBackbone(layer=args.interm_layer, backbone=backbone)
+
+    raise NotImplementedError('Backbone {} not implemented'.format(args.backbone))

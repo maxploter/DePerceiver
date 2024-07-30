@@ -358,8 +358,8 @@ class DePerceiver(nn.Module):
         self.classification_head = classification_head
 
     def forward(self, samples: NestedTensor):
-        features = self.backbone(samples)
-        src, mask = [v for _, v in features.items()][-1].decompose()
+        features_nested_tensor = self.backbone(samples)
+        src, mask = features_nested_tensor.decompose()
         src = src.permute(0, 2, 3, 1)
         assert mask is not None
         hs = self.perceiver(
@@ -387,7 +387,7 @@ def build(args):
         num_classes = 250
     device = torch.device(args.device)
 
-    backbone = build_backbone(args)[0] # TODO: hack to get backbone
+    backbone = build_backbone(args)
 
     num_freq_bands = args.num_freq_bands
     fourier_channels = 2 * ((num_freq_bands * 2) + 1)

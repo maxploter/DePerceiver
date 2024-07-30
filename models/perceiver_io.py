@@ -298,8 +298,8 @@ class DePerceiverIO(nn.Module):
         self.encode_fourier_features_fn = encode_fourier_features_fn
 
     def forward(self, samples: NestedTensor):
-        features = self.backbone(samples)
-        src, mask = [v for _, v in features.items()][-1].decompose()
+        features_nested_tensor = self.backbone(samples)
+        src, mask = features_nested_tensor.decompose()
         src = src.permute(0, 2, 3, 1)
         assert mask is not None
 
@@ -333,7 +333,7 @@ def build(args):
         num_classes = 250
     device = torch.device(args.device)
 
-    backbone = build_backbone(args)[0] # TODO: hack to get backbone
+    backbone = build_backbone(args)
 
     num_freq_bands = 6  # number of freq bands, with original value (2 * K + 1)
     max_freq = 10.  # maximum frequency, hyperparameter depending on how fine the data is
