@@ -204,15 +204,16 @@ def main(args):
     start_time = time.time()
 
     lr_finder = LRFinder(model, optimizer, criterion, device=args.device)
-    print("Training loss (fastai)")
-    lr_finder.range_test(data_loader_train, end_lr=args.end_lr, num_iter=args.num_iter, step_mode=args.step_mode)
-    print(lr_finder.history)
-    lr_finder.plot(log_lr=True)
-    lr_finder.reset()
 
     if args.validation_loss:
         print('Validation loss (Leslie N. Smith)')
         lr_finder.range_test(data_loader_train, val_loader=data_loader_val, end_lr=args.end_lr, num_iter=args.num_iter, step_mode=args.step_mode)
+        print(lr_finder.history)
+        lr_finder.plot(log_lr=True)
+        lr_finder.reset()
+    else:
+        print("Training loss (fastai)")
+        lr_finder.range_test(data_loader_train, end_lr=args.end_lr, num_iter=args.num_iter, step_mode=args.step_mode)
         print(lr_finder.history)
         lr_finder.plot(log_lr=True)
         lr_finder.reset()
