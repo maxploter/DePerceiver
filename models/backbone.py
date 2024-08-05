@@ -63,7 +63,7 @@ class BackboneBase(nn.Module):
         if layers_used is None:
             layers_used = {'layer1', 'layer2', 'layer3', 'layer4'}
         for name, parameter in backbone.named_parameters():
-            if not train_backbone or name not in layers_used:
+            if not train_backbone or not any(layer in name for layer in layers_used):
                 parameter.requires_grad_(False)
         if return_interm_layers:
             return_layers = {"layer1": "0", "layer2": "1", "layer3": "2", "layer4": "3"}
