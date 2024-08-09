@@ -195,6 +195,9 @@ def main(args):
             optimizer.load_state_dict(checkpoint['optimizer'])
             lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
             args.start_epoch = checkpoint['epoch'] + 1
+            if hasattr(lr_scheduler, 'step_size') and lr_scheduler.step_size != args.lr_drop:
+                print(f'Updating scheduler step_size from {lr_scheduler.step_size} to {args.lr_drop}')
+                lr_scheduler.step_size = args.lr_drop
 
     if args.eval:
         test_stats, coco_evaluator = evaluate(model, criterion, postprocessors,
