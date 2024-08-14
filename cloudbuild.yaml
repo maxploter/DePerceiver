@@ -1,0 +1,9 @@
+steps:
+# Build the container image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/deperceiver/perceiver-detection', '-f', 'Dockerfile-gpu', '.']
+# Push the container image to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/deperceiver/perceiver-detection']
+images:
+- gcr.io/deperceiver/perceiver-detection

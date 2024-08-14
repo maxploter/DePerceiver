@@ -1,0 +1,89 @@
+#!/bin/bash
+
+# Default values
+display_name=""
+output_dir=""
+checkpoint="checkpoint.pth"
+custom_arg=""
+
+# Parse named arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --name) display_name="$2"; shift ;;
+        --output) output_dir="$2"; shift ;;
+        --checkpoint) checkpoint="$2"; shift ;;
+        --custom) custom_arg="$2"; shift ;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+    esac
+    shift
+done
+
+if [[ -z "$display_name" ]]; then
+  echo "Error: Please provide a name for the job using --name."
+  exit 1
+fi
+
+model_name="perceiver"
+
+# Create a directory with current timestamp if output_dir is not provided
+if [[ -z "$output_dir" ]]; then
+  timestamp=$(date +%Y-%m-%d_%H-%M-%S)
+  output_dir="/gcs/dataset-object-detection-coco-17/not_tracked_dir/output_${display_name}_${model_name}_${timestamp}"
+  echo "output_dir=$output_dir"
+  resume_arg=""
+else
+  echo "output_dir=$output_dir"
+  echo "checkpoint=$checkpoint"
+  resume_arg="- \"--resume=${output_dir}/${checkpoint}\""
+fi
+
+# Define the YAML content
+yaml_content=$(cat <<EOF
+workerPoolSpecs:
+  machineSpec:
+    machineType: n1-highmem-16
+    acceleratorType: NVIDIA_TESLA_T4
+    acceleratorCount: 4
+  replicaCount: 1
+  containerSpec:
+    imageUri: gcr.io/deperceiver/perceiver-detection:latest
+    command:
+      - "torchrun"
+      - "--standalone"
+      - "--nnodes=1"
+      - "--nproc-per-node=4"
+      - "main.py"
+    args:
+      - "--model=perceiver"
+      - "--coco_path=/gcs/dataset-object-detection-coco-17/coco17"
+      - "--epochs=150"
+      - "--lr_drop=50"
+      - "--dropout=0"
+      - "--batch_size=4"
+      - "--self_per_cross_attn=8"
+      - "--enc_layers=1"
+      - "--enc_nheads_cross=8"
+      - "--nheads=1"
+      - "--backbone=resnet50"
+      - "--num_freq_bands=6"
+      - "--max_freq=10"
+      - "--interm_layer=2"
+      - "--output_dir=$output_dir"
+      $resume_arg
+EOF
+)
+
+mkdir -p ./not_tracked_dir/google_cloud_run
+# Generate the config file name
+config_name_yaml="./not_tracked_dir/google_cloud_run/google_config_${display_name}_${timestamp}.yaml"
+
+# Save the YAML content to the file
+echo "$yaml_content" > "$config_name_yaml"
+
+# Create the custom job (assuming you have gcloud configured)
+gcloud ai custom-jobs create \
+  --region=us-central1 \
+  --display-name="$display_name" \
+  --config="$config_name_yaml"
+
+echo "Created custom job with config file: $config_name_yaml"
