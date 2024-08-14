@@ -35,7 +35,7 @@ def get_args_parser():
     parser.add_argument('--frozen_weights', type=str, default=None,
                         help="Path to the pretrained model. If set, only the mask head will be trained")
     # * Backbone
-    parser.add_argument('--backbone', default='resnet50', type=str, choices=['resnet50', 'n/a'],
+    parser.add_argument('--backbone', default='resnet50', type=str, choices=['resnet50', 'n/a', 'patch'],
                         help="Name of the convolutional backbone to use")
     parser.add_argument('--dilation', action='store_true',
                         help="If true, we replace stride with dilation in the last convolutional block (DC5)")
@@ -43,6 +43,12 @@ def get_args_parser():
                         help="Type of positional embedding to use on top of the image features")
     parser.add_argument('--interm_layer', default=None, type=str, choices=['0', '1', '2'],
                         help="Use feature output from resnet backbone at intermediate layer (layer0, layer1, layer2)")
+    parser.add_argument('--patch_kernel', default=3, type=int,
+                        help="Extract kernel patches around pixel from the images.")
+    parser.add_argument('--patch_stride', default=1, type=int,
+                        help="Stride patches around pixel from the images.")
+    parser.add_argument('--patch_dilation', default=1, type=int,
+                        help="Dilation patches around pixel from the images.")
 
     # * Transformer
     parser.add_argument('--enc_layers', default=6, type=int,
