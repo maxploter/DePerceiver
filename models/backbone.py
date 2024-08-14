@@ -4,6 +4,7 @@ Backbone modules.
 """
 from collections import OrderedDict
 
+import math
 import torch
 import torch.nn.functional as F
 import torchvision
@@ -129,10 +130,42 @@ class NoBackbone(nn.Module):
     def __init__(self):
         super(NoBackbone, self).__init__()
         self.backbone = nn.Identity()
+        self.num_channels = 3 #RGB
 
     def forward(self, tensor_list: NestedTensor):
         output = self.backbone(tensor_list)
-        return {'0': output}
+        return output
+
+
+# source: https://discuss.pytorch.org/t/tf-extract-image-patches-in-pytorch/43837/9
+def extract_image_patches(x, kernel, stride=1, dilation=1):
+    # Do TF 'SAME' Padding
+    b, c, h, w = x.shape
+    h2 = math.ceil(h / stride)
+    w2 = math.ceil(w / stride)
+    pad_row = (h2 - 1) * stride + (kernel - 1) * dilation + 1 - h
+    pad_col = (w2 - 1) * stride + (kernel - 1) * dilation + 1 - w
+    x = F.pad(x, (pad_row // 2, pad_row - pad_row // 2, pad_col // 2, pad_col - pad_col // 2))
+
+    # Extract patches
+    patches = x.unfold(2, kernel, stride).unfold(3, kernel, stride)
+    patches = patches.permute(0, 4, 5, 1, 2, 3).contiguous()
+
+    return patches.view(b, -1, patches.shape[-2], patches.shape[-1])
+
+
+class PatchBackbone(nn.Module):
+    def __init__(self, kernel=3, stride=1, dilation=1):
+        super(PatchBackbone, self).__init__()
+        self.kernel = kernel
+        self.num_channels = (kernel ** 2) * 3
+        self.stride = stride
+        self.dilation = dilation
+
+    def forward(self, tensor_list: NestedTensor):
+        x = extract_image_patches(tensor_list.tensors, kernel=self.kernel, stride=self.stride, dilation=self.dilation)
+        output = NestedTensor(x, tensor_list.mask)
+        return output
 
 
 def build_backbone(args):
@@ -149,6 +182,13 @@ def build_backbone(args):
             # wrap in list to make compatible with Joiner (nn.Sequential) where first element is backbone
             backbone = NoBackbone()
             backbone.num_channels = 3  # RGB
+            return backbone
+        elif args.backbone == 'patch':
+            backbone = PatchBackbone(
+                kernel=args.patch_kernel,
+                stride=args.patch_stride,
+                dilation=args.patch_dilation
+            )
             return backbone
         elif args.backbone == 'resnet50':
             train_backbone = args.lr_backbone > 0
