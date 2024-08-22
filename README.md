@@ -261,6 +261,23 @@ python -m torch.distributed.launch --nproc_per_node=8 --use_env main.py --masks 
 ```
 For instance segmentation only, simply remove the `dataset_file` and `coco_panoptic_path` arguments from the above command line.
 
+# Train in Google Vertex AI
+
+Build docker image and push to registry:
+```
+gcloud builds submit --config cloudbuild.yaml
+```
+
+Edit script [create-gc-custom-job-train.sh.dev](create-gc-custom-job-train.sh.dev) by removing file name `.dev` 
+suffix adjusting docker image version URI, changing machine specification and experiment arguments.
+
+```
+# Run training from scratch
+./create-gc-custom-job-train.sh --name my_job_name
+# Result training from latest checkpoint
+./create-gc-custom-job-train.sh --name my_job_name --output /path/to/output
+```
+
 # License
 DETR is released under the Apache 2.0 license. Please see the [LICENSE](LICENSE) file for more information.
 
