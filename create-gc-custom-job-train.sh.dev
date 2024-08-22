@@ -47,6 +47,9 @@ workerPoolSpecs:
   replicaCount: 1
   containerSpec:
     imageUri: gcr.io/deperceiver/perceiver-detection:latest
+    env:
+      - name: PYTORCH_CUDA_ALLOC_CONF
+        value: "expandable_segments:True"
     command:
       - "torchrun"
       - "--standalone"
