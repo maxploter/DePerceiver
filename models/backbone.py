@@ -1,4 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+
+# Modifications copyright (C) 2024 Maksim Ploter
 """
 Backbone modules.
 """
