@@ -1,10 +1,14 @@
-**DE⫶TR**: End-to-End Object Detection with Transformers
+**Detection Perceiver**: End-to-End Object Detection with Transformers
 ========
 
 [![Support Ukraine](https://img.shields.io/badge/Support-Ukraine-FFD500?style=flat&labelColor=005BBB)](https://opensource.fb.com/support-ukraine)
 
-PyTorch training code and pretrained models for **DETR** (**DE**tection **TR**ansformer).
-We replace the full complex hand-crafted object detection pipeline with a Transformer, and match Faster R-CNN with a ResNet-50, obtaining **42 AP** on COCO using half the computation power (FLOPs) and the same number of parameters. Inference in 50 lines of PyTorch.
+PyTorch training code and pretrained models for **DePerceiver** (**DE**tection Perceiver).
+We replace the full complex hand-crafted object detection pipeline with a Transformer, and match Faster R-CNN with a ResNet-50, 
+obtaining **TODO AP** on COCO using half the computation power (FLOPs) and the same number of parameters. 
+Inference in 50 lines of PyTorch.
+
+TODO Image
 
 ![DETR](.github/DETR.png)
 
@@ -171,6 +175,8 @@ Install pycocotools (for evaluation on COCO) and scipy (for training):
 conda install cython scipy
 conda install conda-forge::einops
 conda install conda-forge::pycocotools
+pip install perceiver-pytorch==0.8.8
+pip install ipywidgets
 ```
 That's it, should be good to train and evaluate detection models.
 

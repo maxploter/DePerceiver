@@ -1,0 +1,1 @@
+{"num_channels": 2048, "num_freq_bands": 6, "max_freq": 10, "enc_layers": 1, "num_queries": 100, "hidden_dim": 256, "enc_nheads_cross": 8, "nheads": 1, "dropout": 0, "self_per_cross_attn": 8, "num_classes": 91}
